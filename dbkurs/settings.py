@@ -1,4 +1,4 @@
-# Django settings for DB_project project.
+# Django settings for dbkurs project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -81,7 +81,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '%fzg(!3_r6dv)-%!%ek&amp;okxx9l=xw#m&amp;9@1##fr*^b6a^m%99h'
+SECRET_KEY = '=8+_gpjgu@9!h92xh5fcqhg9uxrnb73%x7!&amp;4_4_*4o#8!n+g4'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -100,12 +100,13 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'DB_project.urls'
+ROOT_URLCONF = 'dbkurs.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'DB_project.wsgi.application'
+WSGI_APPLICATION = 'dbkurs.wsgi.application'
 
 TEMPLATE_DIRS = (
+    'C:/wspace/dbkurs/templates',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.

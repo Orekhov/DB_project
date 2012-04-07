@@ -1,0 +1,50 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Курсовик по курсу БД</title>	
+	<link rel="stylesheet" href="othercss" type="text/css">
+</head>
+<body>
+	<div id="box">
+    <a href="/"><div id="button">В главное меню</div></a>
+	<h1>Клиенты</h1>
+	<div id="text">Фильтр:
+		<form action="" method="get">
+			<select name="ctype">
+				<option value="0">Все</option>
+	            <option value="1">Юридические лица</option>
+	            <option value="2">Физические лица</option>
+            </select>
+            <input type="checkbox" name="showopt" value="address" />Адрес &nbsp;
+			<input type="checkbox" name="showopt" value="phone" />Телефон &nbsp;
+			<input type="checkbox" name="showopt" value="fax" />Факс &nbsp;
+			<input type="checkbox" name="showopt" value="email" />Email &nbsp;
+			<input type="checkbox" name="showopt" value="bank" />Банк &nbsp;
+			<input type="checkbox" name="showopt" value="account" />Счёт &nbsp;
+			<input type="checkbox" name="showopt" value="bik" />БИК &nbsp;
+			<input type="checkbox" name="showopt" value="inn" />ИНН &nbsp;
+			<input type="checkbox" name="showopt" value="okonh" />ОКОНХ	&nbsp;					
+			<input type="checkbox" name="showopt" value="okpo" />ОКПО &nbsp;
+
+			<br>
+			<input type="submit" value="Показать"/>
+		</form>
+	</div>
+	{% if data %}
+	<table id="bt" width="1080">
+		{% for t in info %}
+			<tr>
+			{% for el in t %}
+				{% if el %}
+				<td> {{el}} </td>
+				{% else %}
+				<td> &nbsp; </td>
+				{% endif %}
+			{% endfor %}
+			</tr>
+		{% endfor %}
+	</table>
+	{% endif %}
+	</div>
+</body>	
+</html>
