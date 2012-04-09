@@ -51,7 +51,7 @@ a:hover {
    background: #65a9d7;
    padding: 20px 10px;
    width :270px;
-   height:40px;
+   height:30px;
    border-radius: 20px;
    color: white;
    font-size: 18px;
@@ -69,4 +69,16 @@ a:hover {
 #button:active {
    border-top-color: #1b435e;
    background: #1b435e;
+}
+
+#tr_header {
+	background-color: #65a9d7;
+}
+
+#tr_item {
+	background-color: #ffffff;
+/*	onmouseout="style.backgroundColor='#ffffff';" onmouseover="style.backgroundColor='#f0f7ff'"*/
+}
+#tr_item:hover {
+	background-color: #f0f7ff;
 }
