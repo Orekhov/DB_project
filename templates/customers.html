@@ -8,7 +8,7 @@
 	<div id="box">
     <a href="/"><div id="button">В главное меню</div></a>
 	<h1>Клиенты</h1>
-	<div id="text">Фильтр:
+	<div id="text">Фильтр: &emsp;&emsp;&emsp;&emsp;&emsp; Показать:
 		<form action="" method="get">
 			<select name="ctype">
 				<option value="0">Все</option>
@@ -32,8 +32,14 @@
 	</div>
 	{% if data %}
 	<table id="bt" width="1080">
+		<tr id="tr_header">
+		{% for hel in infoheader %}
+			<td> {{ hel }} </td>
+		{% endfor %}
+		</tr>
+		
 		{% for t in info %}
-			<tr>
+			<tr id="tr_item">
 			{% for el in t %}
 				{% if el %}
 				<td> {{el}} </td>
