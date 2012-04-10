@@ -1,0 +1,32 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Курсовик по курсу БД</title>	
+	<link rel="stylesheet" href="othercss" type="text/css">
+</head>
+<body>
+	<div id="box">
+    <a href="/"><div id="button">В главное меню</div></a>
+	<h1>Недоставленные заказы</h1>
+	<table id="bt" width="1080">
+		<tr id="tr_header">
+		{% for hel in infoheader %}
+			<td> {{ hel }} </td>
+		{% endfor %}
+		</tr>
+		
+		{% for t in info %}
+			<tr id="tr_item">
+			{% for el in t %}
+				{% if el %}
+				<td> {{el}} </td>
+				{% else %}
+				<td> &nbsp; </td>
+				{% endif %}
+			{% endfor %}
+			</tr>
+		{% endfor %}
+	</table>
+	</div>
+</body>	
+</html>
