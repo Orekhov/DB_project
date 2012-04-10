@@ -6,5 +6,7 @@ urlpatterns = patterns('',
     (r'^maincss$',views.mcss),
     (r'^customers$',views.customers),
     (r'^outputs$',views.outputs),
+    (r'^notdelivered$',views.notdelivered),
+    (r'^orders$',views.orders),
     (r'^othercss$',views.ocss),
 )
