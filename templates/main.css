@@ -1,5 +1,6 @@
 body {
-	background-color: #f0f7ff;
+	/*background-color: #f0f7ff;*/
+	background-color: #f0eedf;
 }
 
 #mainbox {
@@ -9,7 +10,7 @@ top:50%;
 left:50%;
 margin-top:-300px;
 margin-left:-430px;
-height:470px;
+height:540px;
 width:750px;
 border-radius: 20px;
 text-align: center;
@@ -17,17 +18,19 @@ padding: 30px;
 }
 
 h1 {
-	color			: #002200;
+	color			: #1b435e;
 	font-weight		: bold;
 	margin-top		: 0;
-	padding-top		: 0;
 	text-align: center;
+	font-family: Helvetica, Arial, Sans-Serif;
 }
 
-h1 {
-	color			: #002200;
+h2 {
+	color			: 333333;
 	font-weight		: bold;
+	margin-top		: 0;
 	text-align: center;
+	font-family: Helvetica, Arial, Sans-Serif;
 }
 
 table {
@@ -36,10 +39,10 @@ table {
 
 td {
 	padding: 10px;
-	vertical-align: middle;
 }
 
 #text {
+   color : #333333;
    font-size: 18px;
    font-family: Helvetica, Arial, Sans-Serif;
 }
@@ -51,13 +54,13 @@ a {
    text-align: center;
    text-decoration: none;
 }
-   
 a:hover {
    color: #ccc;
    }
    
 #button {
-   background: #65a9d7;
+   /*background: #65a9d7;*/
+   background: #2d7da0;
    padding: 20px 10px;
    width :250px;
    height:30px;
@@ -69,13 +72,10 @@ a:hover {
    text-align: center;
    text-decoration: none;
 }
-   
 #button:hover {
-   border-top-color: #28597a;
    background: #28597a;
    color: #ccc;
 }
 #button:active {
-   border-top-color: #1b435e;
    background: #1b435e;
 }

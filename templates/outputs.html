@@ -8,13 +8,19 @@
 	<div id="box">
     <a href="/"><div id="button">В главное меню</div></a>
 	<h1>Продукция</h1>
-	<div id="text">Сортировать по:
+	<div id="text">Сортировать по:&emsp;&emsp;В порядке:
 		<form action="" method="get">
 			<select name="ctype">
 				<option value="0">id</option>
 	            <option value="1">имени</option>
 	            <option value="2">стоимости</option>
             </select>
+            &emsp;&emsp;&emsp;&emsp;
+            <select name="ordertype">
+				<option value="0">убывания</option>
+	            <option value="1">возрастания</option>
+            </select>
+            &emsp;
 			<input type="submit" value="Показать"/>
 		</form>
 	</div>

@@ -1,0 +1,62 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Курсовик по курсу БД</title>	
+	<link rel="stylesheet" href="othercss" type="text/css">
+	<style type="text/css">
+		li { color: #CC4444;}
+		td { margin: 10px;padding: 10px;}
+	</style>
+</head>
+<body>
+	<div id="box">
+    <a href="/"><div id="button">В главное меню</div></a>
+	<h1>Добавить заказ</h1>
+	<div id="text">
+		<form action="" method="post">
+			<table>
+				<tr>
+					<th>{{ form.diagram_id.label }}</th>
+					<td>{{ form.diagram_id.errors}}
+					{{ form.diagram_id }}</td>
+					<td><a href="">Новый график доставки</a></td>
+				</tr>
+				<tr>
+					<th>{{ form.customer_id.label }}</th>
+					<td>{{ form.customer_id.errors}}
+					{{ form.customer_id }}</td>
+					<td><a href="">Новый клиент</a></td>
+				</tr>
+				<tr>
+					<th>{{ form.delpoint_id.label }}</th>
+					<td>{{ form.delpoint_id.errors}}
+					{{ form.delpoint_id }}</td>
+					<td><a href="">Новый пункт доставки</a></td>
+				</tr>
+				<tr>
+					<th>{{ form.responsible.label }}</th>
+					<td>{{ form.responsible.errors}}
+					{{ form.responsible }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.output_id1.label }}</th>
+					<td>{{ form.output_id1.errors}}
+					{{ form.output_id1 }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.output_id1q.label }}</th>
+					<td>{{ form.output_id1q.errors}}
+					{{ form.output_id1q }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.output_id1d.label }}</th>
+					<td>{{ form.output_id1d.errors}}
+					{{ form.output_id1d }}</td>
+					<td><a href=""> <b>+</b> Дополнительный товар</a></td>
+				</tr>
+			</table>
+			<input type="submit" value="Добавить" />
+		</form>
+	</div>
+</body>	
+</html>
