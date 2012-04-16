@@ -19,11 +19,29 @@
 		{% for t in info %}
 			<tr id="tr_item">
 			{% for el in t %}
-				{% if el %}
-				<td> {{el}} </td>
+				<td>
+				{% if forloop.first %}
+					{% if el %}
+						<b><a href="order/{{el}}/">{{el}}</a></b>
+					{% else %}
+						&nbsp; 
+					{% endif %}
 				{% else %}
-				<td> &nbsp; </td>
+					{% ifequal forloop.counter 2 %}
+						{% if el %}
+				 			<b><a href="customer/{{el}}/">{{el}}</a></b>
+						{% else %}
+							&nbsp; 
+						{% endif %}
+					{% else %}
+						{% if el %}
+				 			{{el}}
+						{% else %}
+							&nbsp; 
+						{% endif %}
+					{% endifequal %}
 				{% endif %}
+				</td>
 			{% endfor %}
 			</tr>
 		{% endfor %}

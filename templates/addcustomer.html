@@ -7,6 +7,31 @@
 		li { color: #CC4444;}
 		td { margin: 10px;padding: 10px;}
 	</style>
+	<script type="text/javascript">
+		window.onload = initAll;
+		var lp="";
+		
+		function initAll() {
+			lp=document.getElementById("lp").innerHTML;
+			x=document.getElementById("id_type").selectedIndex
+			changeContent()
+			document.getElementById("id_type").onchange=function(){
+				changeContent();
+				return false;
+			}
+		}
+		
+		function changeContent(){
+			x=document.getElementById("id_type").selectedIndex
+			if(x=='0'){
+				document.getElementById("lp").innerHTML=" ";
+			}
+			else if(x=='1'){
+				document.getElementById("lp").innerHTML=lp;				
+			}
+		}
+	</script>
+
 </head>
 <body>
 	<div id="box">
@@ -14,11 +39,78 @@
 	<h1>Добавление клиента</h1>
 	<div id="text">
 		<form action="" method="post">
+			<span id="basic">
 			<table>
-				{{ form }}
+				<tr>
+					<th>{{ form.name.label }}</th>
+					<td>{{ form.name.errors}}
+					{{ form.name }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.address.label }}</th>
+					<td>{{ form.address.errors}}
+					{{ form.address }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.phone.label }}</th>
+					<td>{{ form.phone.errors}}
+					{{ form.phone }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.fax.label }}</th>
+					<td>{{ form.fax.errors}}
+					{{ form.fax }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.email.label }}</th>
+					<td>{{ form.email.errors}}
+					{{ form.email }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.type.label }}</th>
+					<td>{{ form.type.errors}}
+					{{ form.type }}</td>
+				</tr>
 			</table>
+			</span>
+			<br />
+			<span id="lp">
+			<table>
+				<tr>
+					<th>{{ form.bank.label }}</th>
+					<td>{{ form.bank.errors}}
+					{{ form.bank }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.account.label }}</th>
+					<td>{{ form.account.errors}}
+					{{ form.account }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.bik.label }}</th>
+					<td>{{ form.bik.errors}}
+					{{ form.bik }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.inn.label }}</th>
+					<td>{{ form.inn.errors}}
+					{{ form.inn }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.okonh.label }}</th>
+					<td>{{ form.okonh.errors}}
+					{{ form.okonh }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.okpo.label }}</th>
+					<td>{{ form.okpo.errors}}
+					{{ form.okpo }}</td>
+				</tr>
+			</table>
+			</span>
 			<input type="submit" value="Добавить" />
 		</form>
+	</div>
 	</div>
 </body>	
 </html>

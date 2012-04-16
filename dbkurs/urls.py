@@ -12,5 +12,7 @@ urlpatterns = patterns('',
     (r'^thanks$',views.thanks),
     (r'^addcustomer$',views.addcustomer),
     (r'^addoutput$',views.addoutput),
+    (r'^customer/(\d{1,3})/$',views.customer),
+    (r'^order/(\d{1,3})/$',views.order),
     (r'^othercss$',views.ocss),
 )

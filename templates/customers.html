@@ -3,6 +3,37 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>Курсовик по курсу БД</title>	
 	<link rel="stylesheet" href="othercss" type="text/css">
+	<script type="text/javascript">
+		window.onload = initAll;
+		var basicChB="";
+		var lpChB="";
+		
+		function initAll() {
+			basicChB=document.getElementById("basiccheckboxes").innerHTML;
+			lpChB=document.getElementById("lpcheckboxes").innerHTML;
+			document.getElementById("lpcheckboxes").innerHTML=" ";
+			document.getElementById("ctp").onchange=function(){
+				changeContent();
+				return false;
+			}
+		}
+		
+		function changeContent(){
+			x=document.getElementById("ctp").selectedIndex
+			if(x=='0'){
+				document.getElementById("basiccheckboxes").innerHTML=basicChB;
+				document.getElementById("lpcheckboxes").innerHTML=" ";
+			}
+			else if(x=='1'){
+				document.getElementById("basiccheckboxes").innerHTML=basicChB;
+				document.getElementById("lpcheckboxes").innerHTML=lpChB;				
+			}
+			else if(x=='2'){
+				document.getElementById("basiccheckboxes").innerHTML=basicChB;
+				document.getElementById("lpcheckboxes").innerHTML=" ";				
+			}
+		}
+	</script>
 </head>
 <body>
 	<div id="box">
@@ -10,22 +41,25 @@
 	<h1>Клиенты</h1>
 	<div id="text">Фильтр: &emsp;&emsp;&emsp;&emsp;&emsp; Показать:
 		<form action="" method="get">
-			<select name="ctype">
-				<option value="0">Все</option>
-	            <option value="1">Юридические лица</option>
-	            <option value="2">Физические лица</option>
+			<select id="ctp" name="ctype">
+				<option id="ctall" value="0">Все</option>
+	            <option id="ctleg" value="1">Юридические лица</option>
+	            <option id="ctnat" value="2">Физические лица</option>
             </select>
-            <input type="checkbox" name="showopt" value="address" />Адрес &nbsp;
-			<input type="checkbox" name="showopt" value="phone" />Телефон &nbsp;
-			<input type="checkbox" name="showopt" value="fax" />Факс &nbsp;
-			<input type="checkbox" name="showopt" value="email" />Email &nbsp;
-			<input type="checkbox" name="showopt" value="bank" />Банк &nbsp;
-			<input type="checkbox" name="showopt" value="account" />Счёт &nbsp;
-			<input type="checkbox" name="showopt" value="bik" />БИК &nbsp;
-			<input type="checkbox" name="showopt" value="inn" />ИНН &nbsp;
-			<input type="checkbox" name="showopt" value="okonh" />ОКОНХ	&nbsp;					
-			<input type="checkbox" name="showopt" value="okpo" />ОКПО &nbsp;
-
+            <span id="basiccheckboxes">
+            	<input type="checkbox" name="showopt" value="address" />Адрес &nbsp;
+				<input type="checkbox" name="showopt" value="phone" />Телефон &nbsp;
+				<input type="checkbox" name="showopt" value="fax" />Факс &nbsp;
+				<input type="checkbox" name="showopt" value="email" />Email &nbsp;
+			</span>
+			<span id="lpcheckboxes">
+				<input type="checkbox" name="showopt" value="bank" />Банк &nbsp;
+				<input type="checkbox" name="showopt" value="account" />Счёт &nbsp;
+				<input type="checkbox" name="showopt" value="bik" />БИК &nbsp;
+				<input type="checkbox" name="showopt" value="inn" />ИНН &nbsp;
+				<input type="checkbox" name="showopt" value="okonh" />ОКОНХ	&nbsp;					
+				<input type="checkbox" name="showopt" value="okpo" />ОКПО &nbsp;
+			</span>
 			<br>
 			<input type="submit" value="Показать"/>
 		</form>
@@ -38,22 +72,28 @@
 		{% endfor %}
 		</tr>
 		
-		{% for t in info %}
+		{% for row in info %}
 			<tr id="tr_item">
-			{% for el in t %}
-				{% if el %}
-				<td> {{el}} </td>
+			{% for el in row %}
+				<td>
+				{% if forloop.first %}
+					{% if el %}
+						<a href="customer/{{el}}/">{{el}}</a>
+					{% else %}
+						&nbsp; 
+					{% endif %}
 				{% else %}
-				<td> &nbsp; </td>
+					{% if el %}
+				 		{{el}}
+					{% else %}
+						&nbsp; 
+					{% endif %}
 				{% endif %}
+				</td>
 			{% endfor %}
 			</tr>
 		{% endfor %}
 	</table>
-	{% endif %}
-	
-	{% if query %}
-	<b>Used query: </b>{{ query }}
 	{% endif %}
 	</div>
 </body>	

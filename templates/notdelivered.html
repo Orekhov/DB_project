@@ -18,11 +18,21 @@
 		{% for t in info %}
 			<tr id="tr_item">
 			{% for el in t %}
-				{% if el %}
-				<td> {{el}} </td>
+				<td>
+				{% if forloop.first %}
+					{% if el %}
+						<b><a href="order/{{el}}/">{{el}}</a></b>
+					{% else %}
+						&nbsp; 
+					{% endif %}
 				{% else %}
-				<td> &nbsp; </td>
+					{% if el %}
+				 		{{el}}
+					{% else %}
+						&nbsp; 
+					{% endif %}
 				{% endif %}
+				</td>
 			{% endfor %}
 			</tr>
 		{% endfor %}

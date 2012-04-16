@@ -31,7 +31,7 @@ def customers(request):
             if ct=='0':
                 query+= " FROM customers;"
             elif ct=='2':
-                query+= " FROM customers WHERE type=FALSE;"
+                query+= " FROM customers WHERE type=TRUE;"
             
         elif ct=='1':
             query = "SELECT customers.customer_id, customers.name, "
@@ -159,9 +159,9 @@ def addorder(request):
             cur.close()
             conn.close()
             
-            return render_to_response('thanks.html',locals())
+            #return render_to_response('thanks.html',locals())
             # use this below after DEBUD
-            #return HttpResponseRedirect('thanks')
+            return HttpResponseRedirect('thanks')
         return render_to_response('addorder.html',locals())
     else:
         form = OrderForm()
@@ -172,6 +172,44 @@ def addcustomer(request):
         form = AddCustomerForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+            name    = cd['name']
+            address = cd['address']
+            phone   = cd['phone']
+            fax     = cd['fax']
+            email   = cd['email']
+            type    = int(cd['type'])
+            if type ==2:
+                bank    = cd['bank']
+                account = str(cd['account'])
+                bik     = str(cd['bik'])
+                inn     = str(cd['inn'])
+                okonh   = str(cd['okonh'])
+                okpo    = str(cd['okpo'])
+                type="False"
+            elif type==1:
+                type="True"
+                
+            conn=psycopg2.connect(util.pgset())
+            cur=conn.cursor()  
+            # calculating order_amount and order_total
+            query="INSERT INTO customers (name,address,phone,fax,email,type) "
+            query+=" VALUES ('"+name+"','"+address+"','"+phone+"','"+fax+"','"+email+"',"+type+");"
+            cur.execute(query)
+            conn.commit()
+            if type=="False":
+                queryhelp="SELECT max(customer_id) FROM customers;"
+                cur.execute(queryhelp)
+                new_customer_id=(cur.fetchone())[0]
+                query2 ="INSERT INTO customers_lp (customer_id,bank,account,bik,inn,okonh,okpo) "
+                query2+=" VALUES ("+str(new_customer_id)+",'"+bank+"',"+account+","+bik+","+inn+","+okonh+","+okpo+");"
+                cur.execute(query2)
+                conn.commit()
+            
+            cur.close()
+            conn.close()
+            
+            #return render_to_response('thanks.html',locals())
+            # use this below after DEBUD
             return HttpResponseRedirect('thanks')
         return render_to_response('addcustomer.html',locals())
     else:
@@ -183,11 +221,85 @@ def addoutput(request):
         form = AddOutputForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+            
+            #return render_to_response('thanks.html',locals())
+            # use this below after DEBUD
             return HttpResponseRedirect('thanks')
         return render_to_response('addoutput.html',locals())
     else:
         form = AddOutputForm()
         return render_to_response('addoutput.html',locals())
+
+def customer(request,customer_id):
+    data=False
+    data2=False
+    try: # int or not
+        customer_id=int(customer_id)
+    except ValueError:
+        raise Http404()
+    data=True
+    customer_id=str(customer_id)
+    conn=psycopg2.connect(util.pgset())
+    cur=conn.cursor()
+    query="SELECT type FROM customers WHERE customer_id="+customer_id+";"
+    cur.execute(query)
+    element=(cur.fetchone())[0]
+    infoheader1=['Номер','Имя/Название','Адрес','Телефон','Факс','Электронная почта']
+    if element: # if it is natural person
+        query2 ="SELECT customer_id,name,address,phone,fax,email "
+        query2+=" FROM customers WHERE customer_id="+customer_id+";"
+    else:
+        data2=True
+        infoheader2=['Название банка','Счёт','БИК','ИНН','ОКОНХ','ОКПО']
+        query2 ="SELECT a.customer_id,a.name,a.address,a.phone,a.fax,a.email,"
+        query2+="b.bank,b.account,b.bik,b.inn,b.okonh,b.okpo "
+        query2+=" FROM customers a RIGHT JOIN customers_lp b"
+        query2+=" on(a.customer_id=b.customer_id) "
+        query2+=" WHERE a.customer_id="+customer_id+";"
+    cur.execute(query2)
+    customerdata=cur.fetchone()
+    customerdata1=customerdata[0:6]
+    customerdata2=customerdata[6:12]
+    conn.commit()    
+    cur.close()
+    conn.close()
+    return render_to_response('customer.html',locals())
+
+def order(request,order_id):
+    data=False
+    try: # int or not
+        order_id=int(order_id)
+    except ValueError:
+        raise Http404()
+    data=True
+    order_id=str(order_id)
+    conn=psycopg2.connect(util.pgset())
+    cur=conn.cursor()
+    query ="select a.order_id,a.customer_id,a.responsible,a.order_date,a.order_amount,a.order_total, "
+    query+=" b.diagram_id,b.vehicle,b.agent,b.plan_date,b.status,b.fact_date, "
+    query+=" c.delpoint_id,c.del_address,c.zone,c.floor,c.elevator,c.entrance,c.code "
+    query+=" from orders a left join delivery_diagrams b on (a.diagram_id=b.diagram_id) "
+    query+=" left join delpoints c on (a.delpoint_id=c.delpoint_id) "
+    query+=" where order_id="+order_id+";"
+    infoheader1=['Номер','Клиент','Ответственный менеджер','Дата заказа','Цена без скидки','Цена со скидкой']
+    infoheader2=['Номер графика доставки','Транспортное средство','Агент','Планируемая дата доставки',
+                'Статус доставки','Фактическая дата доставки']
+    infoheader3=['Номер пункта доставки','Адрес','Зона','Этаж','Наличие лифта','Номер парадной','Входной код']
+    cur.execute(query)
+    orderdata=cur.fetchone()
+    orderdata=list(orderdata)
+    if orderdata[10] == True:
+        orderdata[10]='Доставлен'
+    elif orderdata[10] == False:
+        orderdata[10]='Не доставлен'
+    orderdata1=orderdata[0:6]
+    orderdata2=orderdata[6:12]
+    orderdata3=orderdata[12:19]
+    conn.commit()    
+    cur.close()
+    conn.close()
+    return render_to_response('order.html',locals())
+
 
 def thanks(request):
     return render_to_response('thanks.html')

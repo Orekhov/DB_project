@@ -8,6 +8,10 @@ class OrderForm(forms.Form):
     conn=psycopg2.connect(util.pgset())
     cur=conn.cursor()
     reqmes='Поле не должно быть пустым'
+    maxmes='Значение выше допустимого'
+    minmes='Значение ниже допустимого'
+    nummes='Это поле заполнено неверно'
+    
     query = "SELECT diagram_id,vehicle,agent,plan_date FROM delivery_diagrams "
     query+= " WHERE status=false ORDER BY plan_date asc;"
     cur.execute(query)
@@ -44,8 +48,12 @@ class OrderForm(forms.Form):
         outputs_ok.append((el[0],el[1]),)
     #ch=[('M','Male'),('F','Female')]
     output_id1 = forms.ChoiceField(label='Товар 1',choices=outputs_ok)
-    output_id1q= forms.IntegerField(label='Количество, шт',error_messages={'required': reqmes})
-    output_id1d= forms.IntegerField(label='Скидка, %',error_messages={'required': reqmes})
+    output_id1q= forms.IntegerField(label='Количество, шт',
+                                    error_messages={'required':reqmes,'min_value':minmes,'max_value':maxmes,'invalid': nummes},
+                                    min_value=1,max_value=51)
+    output_id1d= forms.IntegerField(label='Скидка, %',
+                                    error_messages={'required': reqmes,'min_value':minmes,'max_value':maxmes,'invalid': nummes},
+                                    min_value=0,max_value=90)
     
     conn.commit()
     cur.close()
@@ -82,25 +90,14 @@ class OrderForm(forms.Form):
         if (';' in ri)or(')' in ri)or(',' in ri):
             raise forms.ValidationError("Недопустимые символы")
         return ri
-    
-    def clean_output_id1q(self):
-        cd=self.cleaned_data['output_id1q']
-        if int(cd) not in range(1,51):
-            raise forms.ValidationError("Значение вне допустимого")
-        return cd
-           
-    def clean_output_id1d(self):
-        cd=self.cleaned_data['output_id1d']
-        if int(cd) not in range(0,91):
-            raise forms.ValidationError("Значение вне допустимого")
-        return cd
         
         
 class AddCustomerForm(forms.Form):
     conn=psycopg2.connect(util.pgset())
     cur=conn.cursor()
     reqmes='Поле не должно быть пустым'
-    name = forms.CharField(label='ФИО',error_messages={'required':reqmes })
+    nummes='Это поле заполнено неверно'
+    name = forms.CharField(label='Имя',error_messages={'required':reqmes })
     address = forms.CharField(label='Адрес',error_messages={'required': reqmes})
     phone = forms.CharField(label='Телефон',error_messages={'required': reqmes})
     fax = forms.CharField(label='Факс',error_messages={'required': reqmes})
@@ -108,11 +105,11 @@ class AddCustomerForm(forms.Form):
     type = forms.ChoiceField(label='Тип',choices=[('1','Физическое лицо'),('2','Юридическое лицо')])
 
     bank = forms.CharField(label='Банк',required=False)
-    account = forms.IntegerField(label='Аккаунт',required=False)
-    bik = forms.IntegerField(label='БИК',required=False)
-    inn = forms.IntegerField(label='ИНН',required=False)
-    okonh = forms.IntegerField(label='ОКОНХ',required=False)
-    okpo = forms.IntegerField(label='ОКПО',required=False)
+    account = forms.IntegerField(label='Аккаунт',required=False,error_messages={'invalid': nummes})
+    bik = forms.IntegerField(label='БИК',required=False,error_messages={'invalid': nummes})
+    inn = forms.IntegerField(label='ИНН',required=False,error_messages={'invalid': nummes})
+    okonh = forms.IntegerField(label='ОКОНХ',required=False,error_messages={'invalid': nummes})
+    okpo = forms.IntegerField(label='ОКПО',required=False,error_messages={'invalid': nummes})
     
     
 class AddOutputForm(forms.Form):

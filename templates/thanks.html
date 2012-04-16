@@ -8,9 +8,12 @@
 	<div id="box">
     <a href="/"><div id="button">В главное меню</div></a>
 	<h1>Ваш запрос успешно обработан.</h1>
-	{% if query %}
+	{{ cd }}
+	<br />
 	{{ query }}
+	<br>
+	{{ queryhelp }}
+	<br>
 	{{ query2 }}
-	{% endif %}
 </body>	
 </html>
