@@ -6,7 +6,11 @@
 </head>
 <body>
 	<div id="box">
-    <a href="/"><div id="button">В главное меню</div></a>
+	<table><tr>
+    <td width="270" style="border-width: 0px;"><a href="/"><div id="button">В главное меню</div></a></td>
+    <td width="270" style="border-width: 0px;"><a href="/../orders"><div id="button">Заказы</div></a></td>
+    </tr></table>
+    <br />
 	<h1>Заказ № {{order_id}}</h1>
 	<br><div id="text">Основная информация:</div><br>
 	{% if data %}

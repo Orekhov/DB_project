@@ -10,34 +10,55 @@
 </head>
 <body>
 	<div id="box">
+	<table><tr><td width="270" style="border-width: 0px;">
     <a href="/"><div id="button">В главное меню</div></a>
+    </td></tr></table>
 	<h1>Добавить заказ</h1>
 	<div id="text">
 		<form action="" method="post">
 			<table>
 				<tr>
-					<th>{{ form.diagram_id.label }}</th>
-					<td>{{ form.diagram_id.errors}}
-					{{ form.diagram_id }}</td>
-					<td><a href="">Новый график доставки</a></td>
+					<th style="text-align: center; padding: 10px;" colspan="2";> Основная информация: </th>
 				</tr>
 				<tr>
 					<th>{{ form.customer_id.label }}</th>
 					<td>{{ form.customer_id.errors}}
 					{{ form.customer_id }}</td>
-					<td><a href="">Новый клиент</a></td>
+					<td><a href="/../addcustomer">Новый клиент</a></td>
 				</tr>
 				<tr>
 					<th>{{ form.delpoint_id.label }}</th>
 					<td>{{ form.delpoint_id.errors}}
 					{{ form.delpoint_id }}</td>
-					<td><a href="">Новый пункт доставки</a></td>
+					<td><a href="/../adddelpoint">Новый пункт доставки</a></td>
 				</tr>
 				<tr>
 					<th>{{ form.responsible.label }}</th>
 					<td>{{ form.responsible.errors}}
 					{{ form.responsible }}</td>
 				</tr>
+				<tr>
+					<th style="text-align: center; padding: 10px;" colspan="2";> График доставки: </th>
+				</tr>
+				<tr>
+					<th>{{ form.vehicle.label }}</th>
+					<td>{{ form.vehicle.errors}}
+					{{ form.vehicle }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.agent.label }}</th>
+					<td>{{ form.agent.errors}}
+					{{ form.agent }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.plan_date.label }}</th>
+					<td>{{ form.plan_date.errors}}
+					{{ form.plan_date }}</td>
+				</tr>
+				<tr>
+					<th style="text-align: center; padding: 10px;" colspan="2";> Товары: </th>
+				</tr>
+				<tr>
 				<tr>
 					<th>{{ form.output_id1.label }}</th>
 					<td>{{ form.output_id1.errors}}

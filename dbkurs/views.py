@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response
 from django.shortcuts import HttpResponseRedirect
+from django.http import HttpResponseBadRequest
 from dbkurs import util
-from dbkurs.forms import OrderForm, AddCustomerForm, AddOutputForm
+from dbkurs.forms import OrderForm, AddCustomerForm, AddOutputForm, AddDelpointForm, DelivOrderForm
 import psycopg2
 
 def mainp(request):
@@ -115,18 +116,23 @@ def orders(request):
 def addorder(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
+        form.updateNonStaticForms()
         if form.is_valid():
+            # getting data from forms
             cd = form.cleaned_data
-            diagram_id = str(cd['diagram_id'])
             customer_id =str(cd['customer_id'])
             delpoint_id =str(cd['delpoint_id'])
             responsible =cd['responsible']
+            vehicle =cd['vehicle']
+            agent =cd['agent']
+            plan_date =str(cd['plan_date'])
             output_id1 = str(cd['output_id1'])
             output_id1q = int(cd['output_id1q'])
             output_id1d = int(cd['output_id1d'])
+            
             conn=psycopg2.connect(util.pgset())
             cur=conn.cursor()  
-            
+    
             # calculating order_amount and order_total
             squery="SELECT output_price FROM outputs "
             squery+=" WHERE output_id="+output_id1+";"
@@ -134,25 +140,48 @@ def addorder(request):
             info=cur.fetchone()
             order_amount=str(int(info[0])*output_id1q)
             order_total=str(int(order_amount)*(100-output_id1d)/100)
+            
+            # calculating current date
             cur.execute("SELECT CURRENT_DATE;")
             info=cur.fetchone()
             order_date=str(info[0])
             
-            query="INSERT into orders(diagram_id,customer_id,delpoint_id,"
-            query+="responsible,order_date,order_amount,order_total) "
-            query+=" VALUES("+diagram_id+","+customer_id+","+delpoint_id
-            query+=",\'"+responsible+"\','"+order_date+"',"+order_amount+","+order_total+");"
-            cur.execute(query)
+            # inserting new delivery_diagram row
+            query= " INSERT into delivery_diagrams (vehicle,agent,plan_date,status) "
+            query+=" VALUES ('"+vehicle+"','"+agent+"','"+plan_date+"',False);" 
+            if util.simpleSqlCheck(query):
+                cur.execute(query)
+            else:
+                return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
             conn.commit()
             
+            # getting new diagram_id from delivery_diagrams
+            cur.execute("SELECT max(diagram_id) FROM delivery_diagrams;")
+            diagram_id=str((cur.fetchone())[0])
+            
+            # inserting new order row
+            query2="INSERT into orders(diagram_id,customer_id,delpoint_id,"
+            query2+="responsible,order_date,order_amount,order_total) "
+            query2+=" VALUES("+diagram_id+","+customer_id+","+delpoint_id
+            query2+=",\'"+responsible+"\','"+order_date+"',"+order_amount+","+order_total+");"
+            if util.simpleSqlCheck(query2):
+                cur.execute(query2)
+            else:
+                return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
+            conn.commit()
+            
+            # getting new order_id from orders
             cur.execute("SELECT max(order_id) FROM orders")
             oid=(cur.fetchone())[0]
             
-            # works only for 1 output in order
+            # inserting new order_output row
             discount=int(order_amount)-int(order_total)
-            query2="INSERT into orders_outputs(order_id,output_id,quantity,discount) values"
-            query2+=" ("+str(oid)+","+str(output_id1)+","+str(output_id1q)+","+str(discount)+");"
-            cur.execute(query2)
+            query3="INSERT into orders_outputs(order_id,output_id,quantity,discount) values"
+            query3+=" ("+str(oid)+","+str(output_id1)+","+str(output_id1q)+","+str(discount)+");"
+            if util.simpleSqlCheck(query3):
+                cur.execute(query3)
+            else:
+                return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
             conn.commit()
             
             
@@ -165,6 +194,7 @@ def addorder(request):
         return render_to_response('addorder.html',locals())
     else:
         form = OrderForm()
+        form.updateNonStaticForms()
         return render_to_response('addorder.html',locals())
 
 def addcustomer(request):
@@ -191,10 +221,13 @@ def addcustomer(request):
                 
             conn=psycopg2.connect(util.pgset())
             cur=conn.cursor()  
-            # calculating order_amount and order_total
+
             query="INSERT INTO customers (name,address,phone,fax,email,type) "
             query+=" VALUES ('"+name+"','"+address+"','"+phone+"','"+fax+"','"+email+"',"+type+");"
-            cur.execute(query)
+            if util.simpleSqlCheck(query):
+                cur.execute(query)
+            else:
+                return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
             conn.commit()
             if type=="False":
                 queryhelp="SELECT max(customer_id) FROM customers;"
@@ -202,7 +235,10 @@ def addcustomer(request):
                 new_customer_id=(cur.fetchone())[0]
                 query2 ="INSERT INTO customers_lp (customer_id,bank,account,bik,inn,okonh,okpo) "
                 query2+=" VALUES ("+str(new_customer_id)+",'"+bank+"',"+account+","+bik+","+inn+","+okonh+","+okpo+");"
-                cur.execute(query2)
+                if util.simpleSqlCheck(query2):
+                    cur.execute(query2)
+                else:
+                    return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
                 conn.commit()
             
             cur.close()
@@ -221,7 +257,19 @@ def addoutput(request):
         form = AddOutputForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            
+            output_name  = cd['output_name']
+            output_price = str(cd['output_price'])
+            conn=psycopg2.connect(util.pgset())
+            cur=conn.cursor()
+            query =" INSERT INTO outputs (output_name,output_price) "
+            query+=" VALUES ('"+output_name+"',"+output_price+");"
+            if util.simpleSqlCheck(query):
+                cur.execute(query)
+            else:
+                return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
+            conn.commit()
+            cur.close()
+            conn.close()
             #return render_to_response('thanks.html',locals())
             # use this below after DEBUD
             return HttpResponseRedirect('thanks')
@@ -300,6 +348,72 @@ def order(request,order_id):
     conn.close()
     return render_to_response('order.html',locals())
 
+
+def adddelpoint(request):
+    if request.method == 'POST':
+        form = AddDelpointForm(request.POST)
+        if form.is_valid():
+            # getting data from forms
+            cd = form.cleaned_data
+            del_address= cd['del_address']
+            zone       = cd['zone']
+            floor      = cd['floor']
+            elevator   = int(cd['elevator'])
+            entrance   = cd['entrance']
+            code       = cd['code']
+            if elevator ==2:
+                elevator="False"
+            elif elevator==1:
+                elevator="True"
+            
+            conn=psycopg2.connect(util.pgset())
+            cur=conn.cursor()  
+            
+            # calculating order_amount and order_total
+            query="INSERT INTO delpoints (del_address,zone,floor,elevator,entrance,code) "
+            query+=" VALUES ('"+del_address+"','"+zone+"','"+floor+"',"+elevator+",'"+entrance+"','"+code+"');"
+            if util.simpleSqlCheck(query):
+                cur.execute(query)
+            else:
+                return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            #return render_to_response('thanks.html',locals())
+            # use this below after DEBUD
+            return HttpResponseRedirect('thanks')
+        return render_to_response('adddelpoint.html',locals())
+    else:
+        form = AddDelpointForm()
+        return render_to_response('adddelpoint.html',locals())
+    
+def delivorder(request):
+    if request.method == 'POST':
+        form = DelivOrderForm(request.POST)
+        form.updateNonStaticForm()
+        if form.is_valid():
+            cd = form.cleaned_data
+            delivering_order  = str(cd['delivering_order'])
+            conn=psycopg2.connect(util.pgset())
+            cur=conn.cursor()
+            query =" UPDATE delivery_diagrams SET status=True, fact_date=CURRENT_TIMESTAMP "
+            query+=" WHERE diagram_id=(SELECT diagram_id FROM orders WHERE order_id="+delivering_order+");"
+            if util.simpleSqlCheck(query):
+                cur.execute(query)
+            else:
+                return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
+            conn.commit()
+            cur.close()
+            conn.close()
+            return render_to_response('thanks.html',locals())
+            # use this below after DEBUD
+            #return HttpResponseRedirect('thanks')
+        return render_to_response('delivorder.html',locals())
+    else:
+        form = DelivOrderForm()
+        form.updateNonStaticForm()
+        return render_to_response('delivorder.html',locals())
 
 def thanks(request):
     return render_to_response('thanks.html')

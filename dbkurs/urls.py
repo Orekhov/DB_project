@@ -13,6 +13,8 @@ urlpatterns = patterns('',
     (r'^addcustomer$',views.addcustomer),
     (r'^addoutput$',views.addoutput),
     (r'^customer/(\d{1,3})/$',views.customer),
+    (r'^adddelpoint$',views.adddelpoint),
+    (r'^delivorder$',views.delivorder),
     (r'^order/(\d{1,3})/$',views.order),
     (r'^othercss$',views.ocss),
 )
