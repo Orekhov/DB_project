@@ -3,6 +3,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>Курсовик по курсу БД</title>	
 	<link rel="stylesheet" href="othercss" type="text/css">
+	<script type="text/javascript" src="jquery"></script>
 	<script type="text/javascript">
 		window.onload = initAll;
 		var basicChB="";
@@ -11,26 +12,36 @@
 		function initAll() {
 			basicChB=document.getElementById("basiccheckboxes").innerHTML;
 			lpChB=document.getElementById("lpcheckboxes").innerHTML;
-			document.getElementById("lpcheckboxes").innerHTML=" ";
-			document.getElementById("ctp").onchange=function(){
+			initContent();
+			document.getElementById("id_type").onchange=function(){
 				changeContent();
 				return false;
 			}
 		}
 		
-		function changeContent(){
-			x=document.getElementById("ctp").selectedIndex
+		function initContent(){
+			x=document.getElementById("id_type").selectedIndex
 			if(x=='0'){
-				document.getElementById("basiccheckboxes").innerHTML=basicChB;
-				document.getElementById("lpcheckboxes").innerHTML=" ";
+				$("#lpcheckboxes").hide(1);
 			}
-			else if(x=='1'){
-				document.getElementById("basiccheckboxes").innerHTML=basicChB;
-				document.getElementById("lpcheckboxes").innerHTML=lpChB;				
+			else if(x=='1'){		
+				$("#lpcheckboxes").show(1);
 			}
 			else if(x=='2'){
-				document.getElementById("basiccheckboxes").innerHTML=basicChB;
-				document.getElementById("lpcheckboxes").innerHTML=" ";				
+				$("#lpcheckboxes").hide(1);			
+			}
+		}
+		
+		function changeContent(){
+			x=document.getElementById("id_type").selectedIndex
+			if(x=='0'){
+				$("#lpcheckboxes").hide(700);
+			}
+			else if(x=='1'){	
+				$("#lpcheckboxes").show(700);
+			}
+			else if(x=='2'){
+				$("#lpcheckboxes").hide(700);			
 			}
 		}
 	</script>
@@ -38,32 +49,76 @@
 <body>
 	<div id="box">
 	<table><tr><td width="270" style="border-width: 0px;">
-    <a href="/"><div id="button">В главное меню</div></a>
+    <a href="mainp"><div id="button">В главное меню</div></a>
     </td></tr></table>
 	<h1>Клиенты</h1>
-	<div id="text">Фильтр: &emsp;&emsp;&emsp;&emsp;&emsp; Показать:
+	<div id="text">
 		<form action="" method="get">
-			<select id="ctp" name="ctype">
-				<option id="ctall" value="0">Все</option>
-	            <option id="ctleg" value="1">Юридические лица</option>
-	            <option id="ctnat" value="2">Физические лица</option>
-            </select>
-            <span id="basiccheckboxes">
-            	<input type="checkbox" name="showopt" value="address" />Адрес &nbsp;
-				<input type="checkbox" name="showopt" value="phone" />Телефон &nbsp;
-				<input type="checkbox" name="showopt" value="fax" />Факс &nbsp;
-				<input type="checkbox" name="showopt" value="email" />Email &nbsp;
+				<tr>
+					<th>{{ form.type.label }}</th>
+					<td>{{ form.type.errors}}
+					{{ form.type }}</td>
+				</tr>
+			<span id="basiccheckboxes">
+				<tr>
+					<th>{{ form.address.label }}</th>
+					<td>{{ form.address.errors}}
+					{{ form.address }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.phone.label }}</th>
+					<td>{{ form.phone.errors}}
+					{{ form.phone }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.fax.label }}</th>
+					<td>{{ form.fax.errors}}
+					{{ form.fax }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.email.label }}</th>
+					<td>{{ form.email.errors}}
+					{{ form.email }}</td>
+				</tr>
 			</span>
 			<span id="lpcheckboxes">
-				<input type="checkbox" name="showopt" value="bank" />Банк &nbsp;
-				<input type="checkbox" name="showopt" value="account" />Счёт &nbsp;
-				<input type="checkbox" name="showopt" value="bik" />БИК &nbsp;
-				<input type="checkbox" name="showopt" value="inn" />ИНН &nbsp;
-				<input type="checkbox" name="showopt" value="okonh" />ОКОНХ	&nbsp;					
-				<input type="checkbox" name="showopt" value="okpo" />ОКПО &nbsp;
+				<tr>
+					<th>{{ form.bank.label }}</th>
+					<td>{{ form.bank.errors}}
+					{{ form.bank }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.output_id1.label }}</th>
+					<td>{{ form.output_id1.errors}}
+					{{ form.output_id1 }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.account.label }}</th>
+					<td>{{ form.account.errors}}
+					{{ form.account }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.bik.label }}</th>
+					<td>{{ form.bik.errors}}
+					{{ form.bik }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.inn.label }}</th>
+					<td>{{ form.inn.errors}}
+					{{ form.inn }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.okonh.label }}</th>
+					<td>{{ form.okonh.errors}}
+					{{ form.okonh }}</td>
+				</tr>
+				<tr>
+					<th>{{ form.okpo.label }}</th>
+					<td>{{ form.okpo.errors}}
+					{{ form.okpo }}</td>
+				</tr>
 			</span>
-			<br>
-			<input type="submit" value="Показать"/>
+		<input type="submit" value="Просмотр" />
 		</form>
 	</div>
 	{% if data %}

@@ -3,11 +3,32 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>Курсовик по курсу БД</title>	
 	<link rel="stylesheet" href="othercss" type="text/css">
+	<script type="text/javascript" src="jquery"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$(".dost").mouseenter(function() {
+				$(this).css("opacity","1.0");
+				return false;
+			});
+			$(".dost").mouseleave(function() {
+				$(this).css("opacity","0.1");
+				return false;
+			});
+			$(".dost").click(function() {
+				var order=$(this).parent().siblings().first().text();
+				$.post("delorderdir", { order_to_deliver: order}, function(data) {
+					//alert("info: " + data);
+   				});
+   				$(this).parent().parent().hide(1400);
+				return false;
+			});
+		});
+	</script>
 </head>
 <body>
 	<div id="box">
 	<table><tr><td width="270" style="border-width: 0px;">
-    <a href="/"><div id="button">В главное меню</div></a>
+    <a href="mainp"><div id="button">В главное меню</div></a>
     </td></tr></table>
 	<h1>Недоставленные заказы</h1>
 	<table id="bt" width="1080">
@@ -36,6 +57,9 @@
 				{% endif %}
 				</td>
 			{% endfor %}
+			    <td style="border: 0px;">
+			    	<a href="" class="dost" style="opacity:0.1;">Доставить</a>
+			    </td>
 			</tr>
 		{% endfor %}
 	</table>

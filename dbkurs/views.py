@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response
 from django.shortcuts import HttpResponseRedirect
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest
 from dbkurs import util
-from dbkurs.forms import OrderForm, AddCustomerForm, AddOutputForm, AddDelpointForm, DelivOrderForm
-import psycopg2
+from dbkurs.forms import AddOrderForm, AddCustomerForm, AddOutputForm, AddDelpointForm, DelivOrderForm, CustomersForm
 
 def mainp(request):
     return render_to_response('mainpage.html')
@@ -13,7 +12,7 @@ def mainp(request):
 def mcss(request):
     return render_to_response('main.css')
     
-def customers(request):
+def customers_old(request):
     data = False
     if 'ctype' in request.GET: # equals if request was
         data = True
@@ -50,14 +49,62 @@ def customers(request):
             query+= " FROM customers RIGHT JOIN customers_lp "
             query+= " on(customers.customer_id=customers_lp.customer_id);"
             
-        conn=psycopg2.connect(util.pgset())
-        cur=conn.cursor()
-        cur.execute(query)
-        info=cur.fetchall()        
-        conn.commit()
-        cur.close()
-        conn.close()
+        info=util.fetchall_from_sql(query)
     return render_to_response('customers.html',locals())
+
+def customers(request):
+    data=False
+    if request.method == 'GET':
+        data=True
+        form = CustomersForm(request.GET)
+        if form.is_valid():
+            cd = form.cleaned_data
+            type  = str(cd['type'])
+            address  = cd['address']
+            phone  = cd['phone']
+            fax  = cd['fax']
+            email  = cd['email']
+            bank  = cd['bank']
+            account  = cd['account']
+            bik  = cd['bik']
+            inn  = cd['inn']
+            okonh  = cd['okonh']
+            okpo  = cd['okpo']
+            if type=='0' or type=='2': # if 'all' have chosen
+                query = "SELECT customer_id, name, "
+                infoheader=['Номер','Имя']
+                if address: query+="address, ";infoheader.append('Адрес')
+                if phone: query+="phone, ";infoheader.append('Телефон')
+                if fax: query+="fax, ";infoheader.append('Факс')
+                if email: query+="email, ";infoheader.append('Email')
+                query = query[:-2]
+                if type=='0':
+                    query+= " FROM customers;"
+                elif type=='2':
+                    query+= " FROM customers WHERE type=TRUE;"
+            elif type=='1':
+                query = "SELECT customers.customer_id, customers.name, "
+                infoheader=['Номер','Имя']
+                if address: query+="customers.address, ";infoheader.append('Адрес')
+                if phone: query+="customers.phone, ";infoheader.append('Телефон')
+                if fax: query+="customers.fax, ";infoheader.append('Факс')
+                if email: query+="customers.email, ";infoheader.append('Email')
+                if bank: query+="customers_lp.bank, ";infoheader.append('Банк')
+                if account: query+="customers_lp.account, ";infoheader.append('Счёт')
+                if bik: query+="customers_lp.bik, ";infoheader.append('БИК')
+                if inn: query+="customers_lp.inn, ";infoheader.append('ИНН')
+                if okonh: query+="customers_lp.okonh, ";infoheader.append('ОКОНХ')
+                if okpo: query+="customers_lp.okpo, ";infoheader.append('ОКПО')
+                query = query[:-2]
+                query+= " FROM customers RIGHT JOIN customers_lp "
+                query+= " on(customers.customer_id=customers_lp.customer_id);"
+            if type in ('0','1','2'):
+                info=util.fetchall_from_sql(query)
+            return render_to_response('customers.html',locals())
+        return render_to_response('customers.html',locals())
+    else:
+        form = CustomersForm()
+        return render_to_response('customers.html',locals())
 
 def outputs(request):
     data = False
@@ -77,46 +124,30 @@ def outputs(request):
             query += " desc;"
         elif ot == '1':
             query += " asc;"
-        conn=psycopg2.connect(util.pgset())
-        cur=conn.cursor()
-        cur.execute(query)
-        info=cur.fetchall()
-        conn.commit()
-        cur.close()
-        conn.close()
+        info=util.fetchall_from_sql(query)
     return render_to_response('outputs.html',locals())
     
 def notdelivered (request): 
-    infoheader=['Order','Responsible','Vehicle','Agent','Plan date']
-    query = "select a.order_id,a.responsible,b.vehicle,b.agent,b.plan_date "
-    query+= "from orders a inner join delivery_diagrams b "
-    query+= "on (a.diagram_id=b.diagram_id and b.status=false);"
-    conn=psycopg2.connect(util.pgset())
-    cur=conn.cursor()
-    cur.execute(query)
-    info=cur.fetchall() 
-    conn.commit()
-    cur.close()
-    conn.close()
+    infoheader=['Номер','План. дата','Заказ','Ответственный','Транспортное средство','Агент']
+    query = "select a.order_id, b.plan_date,(select string_agg(y.output_name||' - '||x.quantity||'шт.',',  ') as output "
+    query+=" from orders_outputs x inner join outputs y on x.output_id=y.output_id where x.order_id=a.order_id "
+    query+=" group by x.order_id), a.responsible, b.vehicle, b.agent from orders a "
+    query+=" inner join delivery_diagrams b on a.diagram_id=b.diagram_id and b.status=false "
+    query+=" order by b.plan_date asc;"
+    info=util.fetchall_from_sql(query)
     return render_to_response('notdelivered.html',locals())
 
 def orders(request):
-    infoheader=['Order','Customer','Responsible','Order Date','Amount','Total']
+    infoheader=['Заказ','Клиент','Ответственный','Дата заказа','Сумма','Итого (со скидкой)']
     query = "select order_id,customer_id,responsible,order_date,order_amount,order_total "
     query+= "from orders;"
-    conn=psycopg2.connect(util.pgset())
-    cur=conn.cursor()
-    cur.execute(query)
-    info=cur.fetchall() 
-    conn.commit()
-    cur.close()
-    conn.close()
+    info=util.fetchall_from_sql(query)
     return render_to_response('orders.html',locals())
 
 def addorder(request):
     if request.method == 'POST':
-        form = OrderForm(request.POST)
-        form.updateNonStaticForms()
+        form = AddOrderForm(request.POST)
+        form.updateNonStaticFields()
         if form.is_valid():
             # getting data from forms
             cd = form.cleaned_data
@@ -129,35 +160,29 @@ def addorder(request):
             output_id1 = str(cd['output_id1'])
             output_id1q = int(cd['output_id1q'])
             output_id1d = int(cd['output_id1d'])
-            
-            conn=psycopg2.connect(util.pgset())
-            cur=conn.cursor()  
     
             # calculating order_amount and order_total
             squery="SELECT output_price FROM outputs "
             squery+=" WHERE output_id="+output_id1+";"
-            cur.execute(squery)
-            info=cur.fetchone()
+            info=util.fetchone_from_sql(squery)
             order_amount=str(int(info[0])*output_id1q)
             order_total=str(int(order_amount)*(100-output_id1d)/100)
             
             # calculating current date
-            cur.execute("SELECT CURRENT_DATE;")
-            info=cur.fetchone()
+            info=util.fetchone_from_sql("SELECT CURRENT_DATE;")
             order_date=str(info[0])
             
             # inserting new delivery_diagram row
             query= " INSERT into delivery_diagrams (vehicle,agent,plan_date,status) "
             query+=" VALUES ('"+vehicle+"','"+agent+"','"+plan_date+"',False);" 
             if util.simpleSqlCheck(query):
-                cur.execute(query)
+                util.execute_sql(query)
             else:
                 return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-            conn.commit()
             
             # getting new diagram_id from delivery_diagrams
-            cur.execute("SELECT max(diagram_id) FROM delivery_diagrams;")
-            diagram_id=str((cur.fetchone())[0])
+            dat=util.fetchone_from_sql("SELECT max(diagram_id) FROM delivery_diagrams;")
+            diagram_id=str(dat[0])
             
             # inserting new order row
             query2="INSERT into orders(diagram_id,customer_id,delpoint_id,"
@@ -165,37 +190,28 @@ def addorder(request):
             query2+=" VALUES("+diagram_id+","+customer_id+","+delpoint_id
             query2+=",\'"+responsible+"\','"+order_date+"',"+order_amount+","+order_total+");"
             if util.simpleSqlCheck(query2):
-                cur.execute(query2)
+                util.execute_sql(query2)
             else:
                 return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-            conn.commit()
             
             # getting new order_id from orders
-            cur.execute("SELECT max(order_id) FROM orders")
-            oid=(cur.fetchone())[0]
+            dat=util.fetchone_from_sql("SELECT max(order_id) FROM orders;")
+            oid=dat[0]
             
             # inserting new order_output row
             discount=int(order_amount)-int(order_total)
             query3="INSERT into orders_outputs(order_id,output_id,quantity,discount) values"
             query3+=" ("+str(oid)+","+str(output_id1)+","+str(output_id1q)+","+str(discount)+");"
             if util.simpleSqlCheck(query3):
-                cur.execute(query3)
+                util.execute_sql(query3)
             else:
                 return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-            conn.commit()
-            
-            
-            cur.close()
-            conn.close()
-            
-            #return render_to_response('thanks.html',locals())
-            # use this below after DEBUD
             return HttpResponseRedirect('thanks')
         return render_to_response('addorder.html',locals())
     else:
-        form = OrderForm()
-        form.updateNonStaticForms()
-        return render_to_response('addorder.html',locals())
+        form = AddOrderForm()
+        form.updateNonStaticFields()
+        return render_to_response('addorder.html',locals())    
 
 def addcustomer(request):
     if request.method == 'POST':
@@ -219,33 +235,21 @@ def addcustomer(request):
             elif type==1:
                 type="True"
                 
-            conn=psycopg2.connect(util.pgset())
-            cur=conn.cursor()  
-
             query="INSERT INTO customers (name,address,phone,fax,email,type) "
             query+=" VALUES ('"+name+"','"+address+"','"+phone+"','"+fax+"','"+email+"',"+type+");"
             if util.simpleSqlCheck(query):
-                cur.execute(query)
+                util.execute_sql(query)
             else:
                 return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-            conn.commit()
             if type=="False":
-                queryhelp="SELECT max(customer_id) FROM customers;"
-                cur.execute(queryhelp)
-                new_customer_id=(cur.fetchone())[0]
+                dat=util.fetchone_from_sql("SELECT max(customer_id) FROM customers;")
+                new_customer_id=dat[0]
                 query2 ="INSERT INTO customers_lp (customer_id,bank,account,bik,inn,okonh,okpo) "
                 query2+=" VALUES ("+str(new_customer_id)+",'"+bank+"',"+account+","+bik+","+inn+","+okonh+","+okpo+");"
                 if util.simpleSqlCheck(query2):
-                    cur.execute(query2)
+                    util.execute_sql(query2)
                 else:
                     return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-                conn.commit()
-            
-            cur.close()
-            conn.close()
-            
-            #return render_to_response('thanks.html',locals())
-            # use this below after DEBUD
             return HttpResponseRedirect('thanks')
         return render_to_response('addcustomer.html',locals())
     else:
@@ -259,19 +263,12 @@ def addoutput(request):
             cd = form.cleaned_data
             output_name  = cd['output_name']
             output_price = str(cd['output_price'])
-            conn=psycopg2.connect(util.pgset())
-            cur=conn.cursor()
             query =" INSERT INTO outputs (output_name,output_price) "
             query+=" VALUES ('"+output_name+"',"+output_price+");"
             if util.simpleSqlCheck(query):
-                cur.execute(query)
+                util.execute_sql(query)
             else:
                 return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-            conn.commit()
-            cur.close()
-            conn.close()
-            #return render_to_response('thanks.html',locals())
-            # use this below after DEBUD
             return HttpResponseRedirect('thanks')
         return render_to_response('addoutput.html',locals())
     else:
@@ -287,11 +284,9 @@ def customer(request,customer_id):
         raise Http404()
     data=True
     customer_id=str(customer_id)
-    conn=psycopg2.connect(util.pgset())
-    cur=conn.cursor()
     query="SELECT type FROM customers WHERE customer_id="+customer_id+";"
-    cur.execute(query)
-    element=(cur.fetchone())[0]
+    dat=util.fetchone_from_sql(query)
+    element=dat[0]
     infoheader1=['Номер','Имя/Название','Адрес','Телефон','Факс','Электронная почта']
     if element: # if it is natural person
         query2 ="SELECT customer_id,name,address,phone,fax,email "
@@ -304,13 +299,9 @@ def customer(request,customer_id):
         query2+=" FROM customers a RIGHT JOIN customers_lp b"
         query2+=" on(a.customer_id=b.customer_id) "
         query2+=" WHERE a.customer_id="+customer_id+";"
-    cur.execute(query2)
-    customerdata=cur.fetchone()
+    customerdata=util.fetchone_from_sql(query2)
     customerdata1=customerdata[0:6]
     customerdata2=customerdata[6:12]
-    conn.commit()    
-    cur.close()
-    conn.close()
     return render_to_response('customer.html',locals())
 
 def order(request,order_id):
@@ -321,8 +312,6 @@ def order(request,order_id):
         raise Http404()
     data=True
     order_id=str(order_id)
-    conn=psycopg2.connect(util.pgset())
-    cur=conn.cursor()
     query ="select a.order_id,a.customer_id,a.responsible,a.order_date,a.order_amount,a.order_total, "
     query+=" b.diagram_id,b.vehicle,b.agent,b.plan_date,b.status,b.fact_date, "
     query+=" c.delpoint_id,c.del_address,c.zone,c.floor,c.elevator,c.entrance,c.code "
@@ -333,21 +322,20 @@ def order(request,order_id):
     infoheader2=['Номер графика доставки','Транспортное средство','Агент','Планируемая дата доставки',
                 'Статус доставки','Фактическая дата доставки']
     infoheader3=['Номер пункта доставки','Адрес','Зона','Этаж','Наличие лифта','Номер парадной','Входной код']
-    cur.execute(query)
-    orderdata=cur.fetchone()
+    orderdata=util.fetchone_from_sql(query)
     orderdata=list(orderdata)
     if orderdata[10] == True:
         orderdata[10]='Доставлен'
     elif orderdata[10] == False:
         orderdata[10]='Не доставлен'
+    if orderdata[16] == True:
+        orderdata[16]='Есть'
+    elif orderdata[16] == False:
+        orderdata[16]='Нет'
     orderdata1=orderdata[0:6]
     orderdata2=orderdata[6:12]
     orderdata3=orderdata[12:19]
-    conn.commit()    
-    cur.close()
-    conn.close()
     return render_to_response('order.html',locals())
-
 
 def adddelpoint(request):
     if request.method == 'POST':
@@ -364,24 +352,15 @@ def adddelpoint(request):
             if elevator ==2:
                 elevator="False"
             elif elevator==1:
-                elevator="True"
-            
-            conn=psycopg2.connect(util.pgset())
-            cur=conn.cursor()  
+                elevator="True" 
             
             # calculating order_amount and order_total
             query="INSERT INTO delpoints (del_address,zone,floor,elevator,entrance,code) "
             query+=" VALUES ('"+del_address+"','"+zone+"','"+floor+"',"+elevator+",'"+entrance+"','"+code+"');"
             if util.simpleSqlCheck(query):
-                cur.execute(query)
+                util.execute_sql(query)
             else:
                 return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-            conn.commit()
-            cur.close()
-            conn.close()
-            
-            #return render_to_response('thanks.html',locals())
-            # use this below after DEBUD
             return HttpResponseRedirect('thanks')
         return render_to_response('adddelpoint.html',locals())
     else:
@@ -395,28 +374,35 @@ def delivorder(request):
         if form.is_valid():
             cd = form.cleaned_data
             delivering_order  = str(cd['delivering_order'])
-            conn=psycopg2.connect(util.pgset())
-            cur=conn.cursor()
             query =" UPDATE delivery_diagrams SET status=True, fact_date=CURRENT_TIMESTAMP "
             query+=" WHERE diagram_id=(SELECT diagram_id FROM orders WHERE order_id="+delivering_order+");"
             if util.simpleSqlCheck(query):
-                cur.execute(query)
+                util.execute_sql(query)
             else:
                 return HttpResponseBadRequest(content='<b>Error 400</b><br><br>Bad Request')
-            conn.commit()
-            cur.close()
-            conn.close()
-            return render_to_response('thanks.html',locals())
-            # use this below after DEBUD
-            #return HttpResponseRedirect('thanks')
+            return HttpResponseRedirect('thanks')
         return render_to_response('delivorder.html',locals())
     else:
         form = DelivOrderForm()
         form.updateNonStaticForm()
         return render_to_response('delivorder.html',locals())
+    
+def delivorderdirectly(request):
+    if 'order_to_deliver' in request.POST:
+        otd=request.POST['order_to_deliver']
+        otd=str(otd).strip()
+        query =" UPDATE delivery_diagrams SET status=True, fact_date=CURRENT_TIMESTAMP "
+        query+=" WHERE diagram_id=(SELECT diagram_id FROM orders WHERE order_id="+otd+");"
+        if util.simpleSqlCheck(query):
+            util.execute_sql(query)
+            return HttpResponse('заказ '+otd+' доставлен')
+    return HttpResponse('Не доставлено')
 
 def thanks(request):
     return render_to_response('thanks.html')
 
 def ocss(request):
     return render_to_response('other.css')
+
+def jquery(request):
+    return render_to_response('jquery.js')

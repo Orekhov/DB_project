@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from dbkurs import util
-import psycopg2
 
-class OrderForm(forms.Form):
+class AddOrderForm(forms.Form):
     reqmes='Поле не должно быть пустым'
     maxmes='Значение выше допустимого'
     minmes='Значение ниже допустимого'
     nummes='Это поле заполнено неверно'
     datmes='ММ/ЧЧ/ГГГГ или ММ/ЧЧ/ГГ'
-    # these forms would not be changed
     responsible = forms.CharField(label='Ответственный менеджер',error_messages={'required': reqmes})
     vehicle = forms.CharField(label='Транспортное средство',error_messages={'required': reqmes})
     agent = forms.CharField(label='Агент',error_messages={'required': reqmes})
@@ -23,23 +21,20 @@ class OrderForm(forms.Form):
                                     min_value=0,max_value=90)
     
     # these forms would be changed
-    customer_id = forms.ChoiceField(label='Клиент',choices=[(0,'Выберите клиента'),])
-    delpoint_id = forms.ChoiceField(label='Пункт доставки',choices=[(0,'Выберите пункт доставки'),])
-    output_id1 = forms.ChoiceField(label='Товар 1',choices=[(0,'Выберите товар'),])
+    #customer_id = forms.ChoiceField(label='Клиент',choices=[(0,'Выберите клиента'),])
+    #delpoint_id = forms.ChoiceField(label='Пункт доставки',choices=[(0,'Выберите пункт доставки'),])
+    #output_id1 = forms.ChoiceField(label='Товар 1',choices=[(0,'Выберите товар'),])
     
-    def updateNonStaticForms(self):
+    def updateNonStaticFields(self):
         reqmes='Поле не должно быть пустым'
         maxmes='Значение выше допустимого'
         minmes='Значение ниже допустимого'
         nummes='Это поле заполнено неверно'
         datmes='ММ/ЧЧ/ГГГГ или ММ/ЧЧ/ГГ'
-        conn=psycopg2.connect(util.pgset())
-        cur=conn.cursor()
         
         # adding Form with customers
         query = "SELECT customer_id,name FROM customers ORDER BY name asc;"
-        cur.execute(query)
-        info=cur.fetchall()
+        info=util.fetchall_from_sql(query)
         info_ok= [(0,'Выберите клиента'),]
         for el in info:
             info_ok.append((el[0],el[1]),)
@@ -47,8 +42,7 @@ class OrderForm(forms.Form):
         
         # adding Form with delpoint_id-es
         query = "SELECT delpoint_id,del_address FROM delpoints ORDER BY del_address asc;"
-        cur.execute(query)
-        info=cur.fetchall()
+        info=util.fetchall_from_sql(query)
         info_ok= [(0,'Выберите пункт доставки'),]
         for el in info:
             info_ok.append((el[0],el[1]),)
@@ -56,19 +50,14 @@ class OrderForm(forms.Form):
         
         # adding Output 1
         query = "SELECT output_id,output_name FROM outputs ORDER BY output_name asc;"
-        cur.execute(query)
-        outputs=cur.fetchall()
+        outputs=util.fetchall_from_sql(query)
         outputs_ok = [(0,'Выберите товар'),]
         for el in outputs:
             outputs_ok.append((el[0],el[1]),)
         #ch=[('M','Male'),('F','Female')]
-        self.fields['output_id1'] = forms.ChoiceField(label='Товар 1',choices=outputs_ok)
- 
-        conn.commit()
-        cur.close()
-        conn.close()
-    
-    
+        self.fields['output_id1'] = forms.ChoiceField(label='Товар',choices=outputs_ok)
+        
+        
     # is invoked automatically by Django because of it starts with clean_
     # when form.is_valid() is invoked
     def clean_diagram_id(self):
@@ -228,26 +217,33 @@ class DelivOrderForm(forms.Form):
     # this form would be changed
     delivering_order = forms.ChoiceField(label='Заказ',choices=[(0,'Выберите заказ'),])
     def updateNonStaticForm(self):
-        conn=psycopg2.connect(util.pgset())
-        cur=conn.cursor()
         
         # adding orders to delivering_order Form
         query = "select a.order_id,b.plan_date "
         query+= "from orders a inner join delivery_diagrams b "
         query+= "on (a.diagram_id=b.diagram_id and b.status=false);"
-        cur.execute(query)
-        outputs=cur.fetchall()
+        outputs=util.fetchall_from_sql(query)
         ord_ok = [(0,'Выберите заказ'),]
         for el in outputs:
             ord_ok.append((el[0],"№"+str(el[0])+", план - "+str(el[1])),)
         self.fields['delivering_order'] = forms.ChoiceField(label='Заказ',choices=ord_ok)
-        
-        conn.commit()
-        cur.close()
-        conn.close()
         
     def clean_delivering_order(self):
         oi=self.cleaned_data['delivering_order']
         if oi=='0':
             raise forms.ValidationError("Заказ не выбран")
         return oi
+    
+class CustomersForm(forms.Form):
+    type = forms.ChoiceField(label='Тип',required=False,choices=[('0','Все'),('1','Юридические лица'),('2',' Физические лица')])
+    address = forms.BooleanField(label='Адрес',required=False)
+    phone = forms.BooleanField(label='Телефон',required=False)
+    fax = forms.BooleanField(label='Факс',required=False)
+    email = forms.BooleanField(label='Email',required=False)
+    bank = forms.BooleanField(label='Банк',required=False)
+    account = forms.BooleanField(label='Счёт',required=False)
+    bik = forms.BooleanField(label='БИК',required=False)
+    inn = forms.BooleanField(label='ИНН',required=False)
+    okonh = forms.BooleanField(label='ОКОНХ',required=False)
+    okpo = forms.BooleanField(label='ОКПО',required=False)
+    

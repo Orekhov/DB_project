@@ -7,7 +7,7 @@
 <body>
 	<div id="box">
 	<table><tr><td width="270" style="border-width: 0px;">
-    <a href="/"><div id="button">В главное меню</div></a>
+    <a href="mainp"><div id="button">В главное меню</div></a>
     </td></tr></table>
 	<h1>Заказы</h1>
 
@@ -24,14 +24,14 @@
 				<td>
 				{% if forloop.first %}
 					{% if el %}
-						<b><a href="order/{{el}}/">{{el}}</a></b>
+						<b><center><a href="order/{{el}}/">{{el}}</a></center></b>
 					{% else %}
 						&nbsp; 
 					{% endif %}
 				{% else %}
 					{% ifequal forloop.counter 2 %}
 						{% if el %}
-				 			<b><a href="customer/{{el}}/">{{el}}</a></b>
+				 			<b><center><a href="customer/{{el}}/">{{el}}</a></center></b>
 						{% else %}
 							&nbsp; 
 						{% endif %}
