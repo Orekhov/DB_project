@@ -1,7 +1,7 @@
 import psycopg2
 
 def pgset():
-    return "dbname=kurs user=postgres password=abc678 port=5432"
+    return "dbname=kurs user=manager password=123456 port=5432"
 
 def fetchall_from_sql(query):
     conn=psycopg2.connect(pgset())
