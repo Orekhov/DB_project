@@ -62,3 +62,70 @@ grant select,insert on outputs,customers,customers_lp,orders_outputs,
                        orders,delpoints,delivery_diagrams to manager;
 grant select,update on customers_customer_id_seq,delivery_diagrams_diagram_id_seq,
                        delpoints_delpoint_id_seq,orders_order_id_seq,outputs_output_id_seq to manager;
+
+create table mylog( table_name text,_operation text,_user text,
+                    dat_time timestamp,old_value text,new_value text);
+                    
+create function make_note() returns trigger as
+$$
+  declare 
+  cts timestamp;
+  old_val text;
+  new_val text;
+  uname text;
+  begin
+    select into cts CURRENT_TIMESTAMP;
+    select into uname usename from pg_shadow;
+    if TG_OP='INSERT' then
+      old_val=' ';
+      new_val=NEW;
+    end if;
+    if TG_OP='DELETE' then
+      old_val=OLD;
+      new_val=' ';
+    end if;
+    if TG_OP='UPDATE' then
+      old_val=OLD;
+      new_val=NEW;
+    end if;
+    insert into mylog (table_name,_operation,_user,dat_time,old_value,new_value)
+    values (TG_RELNAME,TG_OP,uname,cts,old_val,new_val);
+    return new;
+  end;                  
+$$
+language 'plpgsql';
+                  
+create trigger monitoring1
+after insert or update or delete on outputs
+for each row
+execute procedure make_note();
+
+create trigger monitoring2
+after insert or update or delete on customers
+for each row
+execute procedure make_note();
+
+create trigger monitoring3
+after insert or update or delete on customers_lp
+for each row
+execute procedure make_note();
+
+create trigger monitoring4
+after insert or update or delete on delivery_diagrams
+for each row
+execute procedure make_note();
+
+create trigger monitoring5
+after insert or update or delete on delpoints
+for each row
+execute procedure make_note();
+
+create trigger monitoring6
+after insert or update or delete on orders
+for each row
+execute procedure make_note();
+
+create trigger monitoring7
+after insert or update or delete on orders_outputs
+for each row
+execute procedure make_note();
